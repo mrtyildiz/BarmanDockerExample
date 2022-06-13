@@ -1,0 +1,39 @@
+version: '2'
+
+networks:
+  barmannetwork:
+    ipam:
+      config:
+        - subnet: 172.40.0.0/24
+
+services:
+  
+  barmanpostgresql:
+    image: bpostgresql:latest
+    ports:
+      - "5432:5432"
+    hostname: barmanpostsql
+    command: /bin/bash /opt/start.sh
+    networks:
+      barmannetwork:
+        ipv4_address: 172.40.0.10
+
+  barman:
+    image: barman:latest
+    hostname: barman
+    command: service sshd start
+    networks:
+      barmannetwork:
+        ipv4_address: 172.40.0.12
+
+  djangoapp:
+    image: bdjangoapp:latest
+    volumes:
+      - ./djangoapp/db:/var/lib/postgresql/data
+    hostname: djangoserver
+    ports:
+      - "8000:8000"
+    command: /bin/bash /opt/migrate.sh
+    networks:
+      barmannetwork:
+        ipv4_address: 172.40.0.8
